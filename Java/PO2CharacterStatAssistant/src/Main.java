@@ -121,7 +121,7 @@ public class Main {
         JLabel portraitLabel = new JLabel();
         ImageIcon portraitIcon = new ImageIcon(imagePath); // Ensure image paths are correct
 
-        // Scale the image while maintaining its aspect ratio
+        // Scale the image while maintaining its aspect ratiob
         int imageWidth = 64; // Desired width
         int imageHeight = (portraitIcon.getIconHeight() * imageWidth) / portraitIcon.getIconWidth(); // Maintain aspect ratio
         Image scaledImage = portraitIcon.getImage().getScaledInstance(imageWidth, imageHeight, Image.SCALE_SMOOTH);

@@ -1,104 +1,204 @@
 import javax.swing.*;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
 
 public class Overview extends JFrame {
-    // Path to the database file
-    private static final String DATABASE_PATH = "database/character.db"; // Will be localized later
-
     public Overview() {
         // Set up the frame
         setTitle("Character Overview");
-        setSize(1400, 1000); // Further increased size
+        setSize(1600, 900); // Larger size for detailed sections
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-
-        // Use BorderLayout for the frame
         setLayout(new BorderLayout());
 
-        // Create a panel for the top image with proper aspect ratio and padding
-        JPanel imagePanel = new JPanel() {
-            private final Image backgroundImage = new ImageIcon("images/inventory/inventory.png").getImage(); // Adjust path if needed
+        // Create the main panel with padding
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding around the entire layout
+        mainPanel.setBackground(new Color(30, 30, 30));
+        add(mainPanel);
 
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                // Maintain aspect ratio
-                int panelWidth = getWidth();
-                int panelHeight = getHeight();
-                int imgWidth = backgroundImage.getWidth(this);
-                int imgHeight = backgroundImage.getHeight(this);
+        // Top Panel: Weapon I and Weapon II Panels
+        JPanel topPanel = createTopPanel();
+        mainPanel.add(topPanel, BorderLayout.NORTH);
 
-                double widthScale = (double) panelWidth / imgWidth;
-                double heightScale = (double) panelHeight / imgHeight;
-                double scale = Math.min(widthScale, heightScale);
-
-                int scaledWidth = (int) (imgWidth * scale);
-                int scaledHeight = (int) (imgHeight * scale);
-
-                // Center the image
-                int x = (panelWidth - scaledWidth) / 2;
-                int y = (panelHeight - scaledHeight) / 2;
-
-                g.drawImage(backgroundImage, x, y, scaledWidth, scaledHeight, this);
-            }
-        };
-        imagePanel.setPreferredSize(new Dimension(getWidth(), 600)); // Increased height for the image panel
-        imagePanel.setBorder(BorderFactory.createEmptyBorder(30, 30, 0, 30)); // Add padding
-
-        // Create the table model
-        DefaultTableModel tableModel = new DefaultTableModel(new String[]{"Name", "Class", "Image"}, 0);
-
-        // Load character data from the database
-        loadCharacterData(tableModel);
-
-        // Create a table to display the data
-        JTable table = new JTable(tableModel);
-        table.setRowHeight(40); // Further increase row height for better readability
-        JScrollPane scrollPane = new JScrollPane(table);
-
-        // Add a back button below the table
-        JPanel bottomPanel = new JPanel(new BorderLayout());
-        JButton backButton = new JButton("Back");
-        backButton.addActionListener(e -> {
-            // Go back to the main menu
-            JFrame main = new JFrame();
-            main.setVisible(true);
-            dispose();
-        });
-        bottomPanel.add(scrollPane, BorderLayout.CENTER);
-        bottomPanel.add(backButton, BorderLayout.SOUTH);
-        bottomPanel.setBorder(BorderFactory.createEmptyBorder(20, 30, 30, 30)); // Add padding
-
-        // Add components to the frame
-        add(imagePanel, BorderLayout.NORTH);
-        add(bottomPanel, BorderLayout.CENTER);
+        // Bottom Panel: Buttons
+        JPanel bottomPanel = createBottomPanel();
+        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
 
         setVisible(true);
     }
 
-    private void loadCharacterData(DefaultTableModel tableModel) {
-        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:" + DATABASE_PATH);
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery("SELECT name, class, image_path FROM characters")) {
+    private JPanel createTopPanel() {
+        JPanel topPanel = new JPanel(null); // Use null layout for precise positioning
+        topPanel.setBackground(new Color(30, 30, 30));
+        topPanel.setPreferredSize(new Dimension(1600, 500)); // Adjust height for balance
 
-            while (resultSet.next()) {
-                String name = resultSet.getString("name");
-                String characterClass = resultSet.getString("class");
-                String imagePath = resultSet.getString("image_path");
+        // Weapon I Panel
+        JPanel weaponIPanel = createWeaponPanel("Weapon I");
+        weaponIPanel.setBounds(50, 50, 500, 400); // Positioned to the left
 
-                // Add the data to the table model
-                tableModel.addRow(new Object[]{name, characterClass, imagePath});
+        // Weapon II Panel
+        JPanel weaponIIPanel = createWeaponPanel("Weapon II");
+        weaponIIPanel.setBounds(1050, 50, 500, 400); // Positioned to the right
+
+        // Add the weapon panels to the top panel
+        topPanel.add(weaponIPanel);
+        topPanel.add(weaponIIPanel);
+
+        return topPanel;
+    }
+
+    private JPanel createWeaponPanel(String title) {
+        JPanel weaponPanel = new JPanel(new BorderLayout());
+        weaponPanel.setBackground(new Color(20, 20, 20));
+
+        // Center the title in the border
+        TitledBorder weaponBorder = BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(Color.WHITE), title
+        );
+        weaponBorder.setTitleJustification(TitledBorder.CENTER);
+        weaponBorder.setTitlePosition(TitledBorder.TOP);
+        weaponPanel.setBorder(weaponBorder);
+
+        // Create panel to hold Average Base Damage row and the table
+        JPanel contentPanel = new JPanel(new BorderLayout());
+        contentPanel.setBackground(new Color(20, 20, 20));
+
+        // Add the Average Base Damage row
+        JTextField avgDmgField = new JTextField();
+        JPanel avgDmgPanel = createAverageBaseDamagePanel(avgDmgField);
+        contentPanel.add(avgDmgPanel, BorderLayout.NORTH);
+
+        // Add the weapon table
+        JTable weaponTable = createWeaponTable(avgDmgField);
+        JScrollPane scrollPane = new JScrollPane(weaponTable);
+        contentPanel.add(scrollPane, BorderLayout.CENTER);
+
+        weaponPanel.add(contentPanel, BorderLayout.CENTER);
+
+        return weaponPanel;
+    }
+
+    private JPanel createAverageBaseDamagePanel(JTextField avgDmgField) {
+        JPanel avgDmgPanel = new JPanel(new BorderLayout());
+        avgDmgPanel.setBackground(new Color(30, 30, 30));
+        avgDmgPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+        // Label for Average Base Damage
+        JLabel label = new JLabel("Average Base Dmg:");
+        label.setFont(new Font("Arial", Font.BOLD, 14));
+        label.setForeground(Color.WHITE);
+        avgDmgPanel.add(label, BorderLayout.WEST);
+
+        // Non-editable text field for the value
+        avgDmgField.setPreferredSize(new Dimension(100, 25));
+        avgDmgField.setEditable(false); // Make the field non-editable
+        avgDmgPanel.add(avgDmgField, BorderLayout.CENTER);
+
+        return avgDmgPanel;
+    }
+
+    private JTable createWeaponTable(JTextField avgDmgField) {
+        String[] columnNames = {"Attribute", "Min", "Max"};
+        String[][] data = {
+                {"Weapon Base", "", ""},
+                {"Physical", "", ""},
+                {"Lightning", "", ""},
+                {"Fire", "", ""},
+                {"Cold", "", ""},
+                {"Chaos", "", ""}
+        };
+
+        DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                // Only allow editing for Min and Max columns in rows 1-5
+                return column != 0 && row >= 1 && row <= 5;
             }
+        };
 
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Failed to load character data: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
+        JTable table = new JTable(tableModel);
+        table.setRowHeight(25);
+        table.setFont(new Font("Arial", Font.PLAIN, 14));
+        table.setBackground(new Color(40, 40, 40));
+        table.setForeground(Color.WHITE);
+        table.setGridColor(Color.GRAY);
+        table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
+        table.getTableHeader().setBackground(new Color(30, 30, 30));
+        table.getTableHeader().setForeground(Color.WHITE);
+
+        // Flag to prevent recursive updates
+        final boolean[] isUpdating = {false};
+
+        // Add TableModelListener to calculate Weapon Base and Average Base Damage
+        tableModel.addTableModelListener(e -> {
+            // Check if we are already updating to prevent recursion
+            if (isUpdating[0]) return;
+
+            // Only trigger when the "Min" or "Max" columns in rows 1-5 are edited
+            if (e.getColumn() == 1 || e.getColumn() == 2) {
+                int minColumnIndex = 1;
+                int maxColumnIndex = 2;
+
+                double minSum = 0, maxSum = 0;
+
+                // Sum up the values for rows 1-5 (Physical to Chaos)
+                for (int i = 1; i <= 5; i++) {
+                    minSum += parseDouble((String) tableModel.getValueAt(i, minColumnIndex));
+                    maxSum += parseDouble((String) tableModel.getValueAt(i, maxColumnIndex));
+                }
+
+                // Temporarily set the flag to true to prevent recursion
+                isUpdating[0] = true;
+
+                // Update Weapon Base row
+                tableModel.setValueAt(String.valueOf(minSum), 0, minColumnIndex);
+                tableModel.setValueAt(String.valueOf(maxSum), 0, maxColumnIndex);
+
+                // Calculate and update Average Base Damage
+                double averageBaseDamage = (minSum + maxSum) / 2;
+                avgDmgField.setText(String.format("%.2f", averageBaseDamage));
+
+                // Reset the flag
+                isUpdating[0] = false;
+            }
+        });
+
+        return table;
+    }
+
+    private double parseDouble(String value) {
+        try {
+            return Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+            return 0; // Treat invalid or empty cells as 0
         }
+    }
+
+    private JPanel createBottomPanel() {
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        bottomPanel.setBackground(new Color(30, 30, 30));
+
+        JButton backButton = new JButton("Back");
+        backButton.addActionListener(e -> {
+            JFrame main = new JFrame(); // Replace with actual main window
+            main.setVisible(true);
+            dispose();
+        });
+
+        JButton addButton = new JButton("Add Character");
+        addButton.addActionListener(e -> {
+            JFrame newCharacterWindow = new NewCharacterWindow();
+            newCharacterWindow.setVisible(true);
+            dispose();
+        });
+
+        bottomPanel.add(addButton);
+        bottomPanel.add(backButton);
+        return bottomPanel;
     }
 
     public static void main(String[] args) {
