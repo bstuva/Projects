@@ -138,16 +138,26 @@ public class Lab5 {
         char sideSymb, char midSymb, int numSymbols) {
 
         String result = "";
+        Boolean x = true;
+        int currentNumSymbols = numSymbols;
         int sideWidth = -1, midWidth = -1;
-
-        // YOUR CODE HERE
         
         // If numSymbols is 0, return an empty string
-        // -->
+        if(numSymbols == 0){
+            return result;
+        }
         
         // If numSymbols is not an odd number, find the
         // odd number less than numSymbols and replace it
-        // -->
+        if(numSymbols % 2 == 0){
+            return result;
+        }
+        else{
+            while(x){
+                if()
+            }
+
+        }
         
         // Make a loop to iterate the pyramid's levels
         for (????????????) {

@@ -16,11 +16,14 @@ public class Lab6
         Scanner scan = new Scanner(System.in);
 
         /* Get the retail price of something */
-        double rpLaptop = -1;
-        double rpPhone = -1;
-        double rpBackpack = -1;
+        double retailPriceLaptop = -1;
+        double retailPricePhone = -1;
+        double retailPriceBackpack = -1;
         
-        // >>>>> YOUR CODE HERE <<<<<
+        // >>>>> YOUR CODE HERE <<<<<\
+        retailPriceLaptop = readRetailPrice("laptop", scan);
+        retailPricePhone = readRetailPrice("phone", scan);
+        retailPriceBackpack = readRetailPrice("backpack",scan);
 
         /* Compute after-tax prices in one state with those in AZ */
         System.out.println("Enter one state you'd like to compare after-tax prices: ");
@@ -28,9 +31,9 @@ public class Lab6
         double targetStateTax = getSalesTaxRate(targetState);
 
         /* Compute the after-tax prices */
-        double afterTaxAZ = addTax(rpLaptop) + addTax(rpPhone) + addTax(rpBackpack);
-        double afterTaxTarget = addTax(rpLaptop, targetStateTax) + addTax(rpPhone, targetStateTax)
-                + addTax(rpBackpack, targetStateTax);
+        double afterTaxAZ = addTax(retailPriceLaptop) + addTax(retailPricePhone) + addTax(retailPriceBackpack);
+        double afterTaxTarget = addTax(retailPriceLaptop, targetStateTax) + addTax(retailPricePhone, targetStateTax)
+                + addTax(retailPriceBackpack, targetStateTax);
         double diff = afterTaxAZ - afterTaxTarget;
 
         /* Show the total after-tax prices of your stuff in AZ and the target state */
@@ -57,9 +60,20 @@ public class Lab6
      */
     private static double readRetailPrice(String name, Scanner scan)
     {
-        // >>>>> YOUR CODE HERE <<<<<
-        
-        return -1;
+        boolean x = true;
+        double price = 0;
+
+        while(x){
+            System.out.println("What's the retail price of your " + name + "?");
+            price = scan.nextDouble();
+            if(price < 0){
+                System.out.println("[ERR] a price must be non-negative. Please type it again.");
+            }
+            else{
+                x = false;
+            }
+        }
+        return price;
     }
 
     /**
@@ -70,9 +84,7 @@ public class Lab6
      */
     private static double addTax(double price)
     {
-        // >>>>> YOUR CODE HERE <<<<<
-        
-        return -1;
+        return price * (1 + (getSalesTaxRate("AZ") / 100));
     }
 
     /**
@@ -84,9 +96,7 @@ public class Lab6
      */
     private static double addTax(double price, double rate)
     {
-        // >>>>> YOUR CODE HERE <<<<<
-        
-        return -1;
+        return price * (1 + (rate/100));
     }
 
     /**
